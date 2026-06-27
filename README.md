@@ -38,11 +38,11 @@ sudo go build -o awg-client .
 Type=Application
 Name=AWGuird
 Comment=Manage WireGuard and AmneziaWG Tunnels
-Exec=gksudo /usr/local/bin/awg-client
+Exec=pkexec /usr/local/bin/awg-client
 Icon=awg-client
 Terminal=false
 Categories=Network;Utility;
-X-GNOME-UsesNotifications=true
+StartupWMClass=awg-client
 ```
 
 + Copy the awg-client binary to /usr/local/bin
