@@ -47,6 +47,7 @@ StartupWMClass=awg-client
 
 + Copy the awg-client binary to /usr/local/bin
 + Copy app_icon.png file to /usr/share/pixmaps/awg-client.png
-
++ Restart gdm if the application doesn't show in the app drawer
+  
 ### Packages
 Debian package is available.
