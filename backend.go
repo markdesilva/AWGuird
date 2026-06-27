@@ -183,7 +183,9 @@ func (app *App) HandleToggle() {
 	}
 
 	app.SelectActiveTunnelInTreeView()
-	app.UpdateStatusUI()
+	
+	// FIXED: Force the UI data labels to accurately render properties of the toggled tunnel instantly
+	app.SelectTunnel(app.CurrentTunnel) 
 }
 
 func (app *App) ShowConfigEditorModal() {
@@ -196,7 +198,7 @@ func (app *App) ShowConfigEditorModal() {
 		return
 	}
 
-	// FIXED: Manual build setup safely circumvents gotk3 go-variadic structure constraints
+	// FIXED: Direct instantiation and initialization fixes gotk3 variadic argument restrictions
 	dialog, _ := gtk.DialogNew()
 	dialog.SetTitle(fmt.Sprintf("Editing %s", t.Name))
 	dialog.SetTransientFor(app.Window)
