@@ -1,0 +1,10 @@
+Package: awg-client
+Version: 1.0.0
+Architecture: amd64
+Maintainer: Mark De Silva
+Depends: libc6, amneziawg-tools
+Section: utils
+Priority: optional
+Description: AWGuird AmneziaWG and WireGuard GUI Client
+ A lightweight GTK3 desktop client interface to manage 
+ active AmneziaWG and WireGuard network tunnels.
