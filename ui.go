@@ -1,0 +1,263 @@
+package main
+
+import (
+	"path/filepath"
+
+	"github.com/gotk3/gotk3/gdk"
+	"github.com/gotk3/gotk3/glib"
+	"github.com/gotk3/gotk3/gtk"
+)
+
+func (app *App) BuildUI() {
+	win, _ := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
+	win.SetTitle("AWGuird")
+	win.SetDefaultSize(880, 580)
+	win.Connect("destroy", func() { gtk.MainQuit() })
+	app.Window = win
+
+	if pixbuf, err := gdk.PixbufNewFromFile("app_icon.png"); err == nil {
+		win.SetIcon(pixbuf)
+	}
+
+	mainVBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 5)
+
+	headerCenterBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 2)
+	headerCenterBox.SetMarginTop(10)
+	headerCenterBox.SetMarginBottom(10)
+	
+	app.HeaderSubtitle, _ = gtk.LabelNew("Disconnected")
+	headerCenterBox.PackStart(app.HeaderSubtitle, false, false, 0)
+	mainVBox.PackStart(headerCenterBox, false, false, 0)
+
+	notebook, _ := gtk.NotebookNew()
+	notebook.SetScrollable(true)
+
+	tunnelsTabBox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 12)
+	tunnelsTabBox.SetMarginStart(10)
+	tunnelsTabBox.SetMarginEnd(10)
+	tunnelsTabBox.SetMarginTop(10)
+	tunnelsTabBox.SetMarginBottom(10)
+
+	leftColumnBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 8)
+	scrollWin, _ := gtk.ScrolledWindowNew(nil, nil)
+	scrollWin.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+	scrollWin.SetSizeRequest(240, -1)
+
+	app.TunnelListStore, _ = gtk.ListStoreNew(glib.TYPE_OBJECT, glib.TYPE_STRING)
+	app.TunnelTreeView, _ = gtk.TreeViewNewWithModel(app.TunnelListStore)
+	
+	iconRenderer, _ := gtk.CellRendererPixbufNew()
+	iconCol, _ := gtk.TreeViewColumnNew()
+	iconCol.PackStart(iconRenderer, false)
+	iconCol.AddAttribute(iconRenderer, "pixbuf", 0)
+	
+	textRenderer, _ := gtk.CellRendererTextNew()
+	nameCol, _ := gtk.TreeViewColumnNewWithAttribute("Tunnels", textRenderer, "text", 1)
+	
+	app.TunnelTreeView.AppendColumn(iconCol)
+	app.TunnelTreeView.AppendColumn(nameCol)
+	scrollWin.Add(app.TunnelTreeView)
+	leftColumnBox.PackStart(scrollWin, true, true, 0)
+
+	bottomButtonGrid, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 6)
+	addFileBtn, _ := gtk.ButtonNewWithLabel("➕ Add Tunnel")
+	deleteBtn, _ := gtk.ButtonNewWithLabel("❌")
+	importZipBtn, _ := gtk.ButtonNewWithLabel("🗄️")
+	
+	bottomButtonGrid.PackStart(addFileBtn, true, true, 0)
+	bottomButtonGrid.PackStart(deleteBtn, false, false, 0)
+	bottomButtonGrid.PackStart(importZipBtn, false, false, 0)
+	leftColumnBox.PackStart(bottomButtonGrid, false, false, 0)
+
+	rightColumnBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
+
+	interfaceFrame, _ := gtk.FrameNew("Interface")
+	interfaceGrid, _ := gtk.GridNew()
+	interfaceGrid.SetOrientation(gtk.ORIENTATION_VERTICAL)
+	interfaceGrid.SetRowSpacing(6)
+	interfaceGrid.SetMarginStart(15)
+	interfaceGrid.SetMarginEnd(15)
+	interfaceGrid.SetMarginTop(10)
+	interfaceGrid.SetMarginBottom(10)
+
+	app.StatusLabel, _ = gtk.LabelNew("Status: Disconnected")
+	app.PubKeyLabel, _ = gtk.LabelNew("Public key: —")
+	app.PortLabel, _ = gtk.LabelNew("Listen port: —")
+	app.AddressLabel, _ = gtk.LabelNew("Addresses: —")
+	app.DnsLabel, _ = gtk.LabelNew("DNS servers: —")
+	app.ToggleBtn, _ = gtk.ButtonNewWithLabel("Activate")
+	app.ToggleBtn.SetSensitive(false)
+
+	app.StatusLabel.SetXAlign(0)
+	app.PubKeyLabel.SetXAlign(0)
+	app.PubKeyLabel.SetSelectable(true)
+	app.PortLabel.SetXAlign(0)
+	app.AddressLabel.SetXAlign(0)
+	app.DnsLabel.SetXAlign(0)
+
+	interfaceGrid.Add(app.StatusLabel)
+	interfaceGrid.Add(app.PubKeyLabel)
+	interfaceGrid.Add(app.PortLabel)
+	interfaceGrid.Add(app.AddressLabel)
+	interfaceGrid.Add(app.DnsLabel)
+	
+	btnBox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	btnBox.SetMarginTop(6)
+	btnBox.PackStart(app.ToggleBtn, false, false, 0)
+	interfaceGrid.Add(btnBox)
+	interfaceFrame.Add(interfaceGrid)
+	rightColumnBox.PackStart(interfaceFrame, true, true, 0)
+
+	peerFrame, _ := gtk.FrameNew("Peer")
+	peerGrid, _ := gtk.GridNew()
+	peerGrid.SetOrientation(gtk.ORIENTATION_VERTICAL)
+	peerGrid.SetRowSpacing(6)
+	peerGrid.SetMarginStart(15)
+	peerGrid.SetMarginEnd(15)
+	peerGrid.SetMarginTop(10)
+	peerGrid.SetMarginBottom(10)
+
+	app.PeerPubKeyLabel, _ = gtk.LabelNew("Public key: —")
+	app.AllowedIpsLabel, _ = gtk.LabelNew("Allowed IPs: —")
+	app.EndpointLabel, _ = gtk.LabelNew("Endpoint: —")
+	app.HandshakeLabel, _ = gtk.LabelNew("Latest handshake: —")
+	app.TransferLabel, _ = gtk.LabelNew("Transfer: —")
+
+	app.PeerPubKeyLabel.SetXAlign(0)
+	app.PeerPubKeyLabel.SetSelectable(true)
+	app.AllowedIpsLabel.SetXAlign(0)
+	app.EndpointLabel.SetXAlign(0)
+	app.HandshakeLabel.SetXAlign(0)
+	app.TransferLabel.SetXAlign(0)
+
+	peerGrid.Add(app.PeerPubKeyLabel)
+	peerGrid.Add(app.AllowedIpsLabel)
+	peerGrid.Add(app.EndpointLabel)
+	peerGrid.Add(app.HandshakeLabel)
+	peerGrid.Add(app.TransferLabel)
+	peerFrame.Add(peerGrid)
+	rightColumnBox.PackStart(peerFrame, true, true, 0)
+
+	// FIXED: Button element is now concisely labeled "Edit"
+	actionActionBox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	app.EditConfigBtn, _ = gtk.ButtonNewWithLabel("📝 Edit")
+	app.EditConfigBtn.SetSensitive(false)
+	actionActionBox.PackEnd(app.EditConfigBtn, false, false, 0)
+	rightColumnBox.PackStart(actionActionBox, false, false, 0)
+
+	tunnelsTabBox.PackStart(leftColumnBox, false, false, 0)
+	tunnelsTabBox.PackStart(rightColumnBox, true, true, 0)
+
+	logsTabBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 5)
+	logsTabBox.SetMarginStart(10)
+	logsTabBox.SetMarginEnd(10)
+	logsTabBox.SetMarginTop(10)
+	logsTabBox.SetMarginBottom(10)
+
+	app.LogTextView, _ = gtk.TextViewNew()
+	app.LogTextView.SetEditable(false)
+	logScroll, _ := gtk.ScrolledWindowNew(nil, nil)
+	logScroll.Add(app.LogTextView)
+	logsTabBox.PackStart(logScroll, true, true, 0)
+
+	tunnelsTabLabel, _ := gtk.LabelNew("  Tunnels  ")
+	logsTabLabel, _ := gtk.LabelNew("  Logs  ")
+	notebook.AppendPage(tunnelsTabBox, tunnelsTabLabel)
+	notebook.AppendPage(logsTabBox, logsTabLabel)
+	
+	mainVBox.PackStart(notebook, true, true, 0)
+	win.Add(mainVBox)
+
+	notebook.Connect("switch-page", func(nb *gtk.Notebook, page *gtk.Widget, pageNum uint) {
+		if pageNum == 0 && app.ActiveTunnel != "" {
+			app.SelectActiveTunnelInTreeView()
+		}
+	})
+
+	app.TunnelTreeView.Connect("cursor-changed", func() {
+		selection, _ := app.TunnelTreeView.GetSelection()
+		model, iter, ok := selection.GetSelected()
+		if ok {
+			val, _ := model.(*gtk.TreeModel).GetValue(iter, 1)
+			name, _ := val.GetString()
+			if tunnel, exists := app.TunnelsMap[name]; exists {
+				app.SelectTunnel(tunnel)
+			}
+		}
+	})
+
+	app.TunnelTreeView.Connect("row-activated", func() {
+		selection, _ := app.TunnelTreeView.GetSelection()
+		model, iter, ok := selection.GetSelected()
+		if ok {
+			val, _ := model.(*gtk.TreeModel).GetValue(iter, 1)
+			name, _ := val.GetString()
+			if tunnel, exists := app.TunnelsMap[name]; exists {
+				app.CurrentTunnel = tunnel
+				app.HandleToggle()
+			}
+		}
+	})
+
+	app.ToggleBtn.Connect("clicked", func() {
+		app.HandleToggle()
+	})
+
+	app.EditConfigBtn.Connect("clicked", func() {
+		app.ShowConfigEditorModal()
+	})
+
+	addFileBtn.Connect("clicked", func() {
+		app.ImportLooseConfigPicker()
+	})
+
+	importZipBtn.Connect("clicked", func() {
+		app.ImportZipPicker()
+	})
+
+	deleteBtn.Connect("clicked", func() {
+		app.DeleteSelectedTunnel()
+	})
+
+	if provider, err := gtk.CssProviderNew(); err == nil {
+		provider.LoadFromData(`
+			notebook { background-color: #f6f6f6; border: 1px solid #bcbcbc; }
+			notebook tab { padding: 8px 24px; font-weight: bold; background-color: #e8e8e8; }
+			notebook tab:active, notebook tab:checked { background-color: #ffffff; border-bottom: 2px solid #d35400; }
+			frame { border: 1px solid #d0d0d0; border-radius: 4px; background-color: #ffffff; }
+		`)
+		if screen, err := gdk.ScreenGetDefault(); err == nil {
+			gtk.AddProviderForScreen(screen, provider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+		}
+	}
+
+	win.ShowAll()
+}
+
+func (app *App) SelectActiveTunnelInTreeView() {
+	if app.ActiveTunnel == "" {
+		return
+	}
+	model := app.TunnelListStore
+	iter, ok := model.GetIterFirst()
+	for ok {
+		val, _ := model.GetValue(iter, 1)
+		name, _ := val.GetString()
+		if name == app.ActiveTunnel {
+			selection, _ := app.TunnelTreeView.GetSelection()
+			selection.SelectIter(iter)
+			
+			path, _ := model.GetPath(iter)
+			app.TunnelTreeView.ScrollToCell(path, nil, false, 0.0, 0.0)
+			break
+		}
+		ok = model.IterNext(iter)
+	}
+}
+
+func (app *App) getIconPath(tunnelName string) string {
+	if app.ActiveTunnel == tunnelName {
+		return filepath.Join(".", "shield_active.png")
+	}
+	return filepath.Join(".", "shield_inactive.png")
+}
