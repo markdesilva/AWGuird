@@ -4,7 +4,7 @@ A Linux GTK gui client for AmneziaWG heavily inspired by UnnoTed's Wireguird
 <img width="900" height="635" alt="AWGuird01" src="https://github.com/user-attachments/assets/396dd032-5c05-45b1-9956-c3287203ea02" />
 
 ### Features
-+ Looks the same and does almost the same things as the official Wireguard's Windows gui client
++ Looks the same and does almost the same things as the official Wireguard's Windows gui client but for AmneziaWG
 + Lists tunnels from /etc/amnezia/amneziawg
 + Controls AmneziaWG through awg-quick
 
