@@ -15,8 +15,14 @@ func (app *App) BuildUI() {
 	win.Connect("destroy", func() { gtk.MainQuit() })
 	app.Window = win
 
-	if pixbuf, err := gdk.PixbufNewFromFile("app_icon.png"); err == nil {
-		win.SetIcon(pixbuf)
+	// FIXED: Load the main window icon from embedded memory
+	loader, err := gdk.PixbufLoaderNew()
+	if err == nil {
+		_, _ = loader.Write(AppIconBytes)
+		_ = loader.Close()
+		if pixbuf, err := loader.GetPixbuf(); err == nil {
+			win.SetIcon(pixbuf)
+		}
 	}
 
 	mainVBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 5)
@@ -138,7 +144,6 @@ func (app *App) BuildUI() {
 	peerFrame.Add(peerGrid)
 	rightColumnBox.PackStart(peerFrame, true, true, 0)
 
-	// FIXED: Button element is now concisely labeled "Edit"
 	actionActionBox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	app.EditConfigBtn, _ = gtk.ButtonNewWithLabel("📝 Edit")
 	app.EditConfigBtn.SetSensitive(false)
@@ -255,6 +260,7 @@ func (app *App) SelectActiveTunnelInTreeView() {
 	}
 }
 
+// Deprecated in favor of embedded loading; kept safely to prevent breaking outside imports.
 func (app *App) getIconPath(tunnelName string) string {
 	if app.ActiveTunnel == tunnelName {
 		return filepath.Join(".", "shield_active.png")

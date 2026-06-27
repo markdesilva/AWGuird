@@ -47,14 +47,21 @@ func (app *App) scanDirectory(dirPath string) {
 
 			app.TunnelsMap[t.Name] = t
 
-			imageFile := "shield_inactive.png"
+			// FIXED: Select embedded byte array instead of local file paths
+			chosenBytes := ShieldInactiveBytes
 			if app.ActiveTunnel == t.Name {
-				imageFile = "shield_active.png"
+				chosenBytes = ShieldActiveBytes
 			}
 
 			var pixbuf *gdk.Pixbuf
-			if pb, err := gdk.PixbufNewFromFileAtScale(imageFile, 22, 22, true); err == nil {
-				pixbuf = pb
+			loader, err := gdk.PixbufLoaderNew()
+			if err == nil {
+				_, _ = loader.Write(chosenBytes)
+				_ = loader.Close()
+				if pb, err := loader.GetPixbuf(); err == nil {
+					// Perform high-quality structural scaling entirely in-memory
+					pixbuf, _ = pb.ScaleSimple(22, 22, gdk.INTERP_BILINEAR)
+				}
 			}
 
 			iter := app.TunnelListStore.Append()
