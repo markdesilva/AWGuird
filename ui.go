@@ -1,27 +1,80 @@
 package main
 
+/*
+#cgo pkg-config: gtk+-3.0
+#include <gtk/gtk.h>
+
+// Forward declarations for CGO signal forwarding
+extern void go_tray_activate_callback(GObject *object, gpointer user_data);
+extern void go_tray_popup_callback(GObject *object, guint button, guint activate_time, gpointer user_data);
+
+static inline GObject* create_status_icon(GdkPixbuf *pixbuf, gpointer user_data) {
+    GtkStatusIcon *icon = gtk_status_icon_new_from_pixbuf(pixbuf);
+    gtk_status_icon_set_title(icon, "AWGuird");
+    gtk_status_icon_set_tooltip_text(icon, "AWGuird VPN Client");
+    gtk_status_icon_set_visible(icon, TRUE);
+    
+    g_signal_connect(G_OBJECT(icon), "activate", G_CALLBACK(go_tray_activate_callback), user_data);
+    g_signal_connect(G_OBJECT(icon), "popup-menu", G_CALLBACK(go_tray_popup_callback), user_data);
+    
+    return G_OBJECT(icon);
+}
+*/
+import "C"
+
 import (
 	"path/filepath"
+	"unsafe"
 
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
+// Global reference pointers for the CGO callbacks to access
+var globalWin *gtk.Window
+var globalTrayMenu *gtk.Menu
+
+//export go_tray_activate_callback
+func go_tray_activate_callback(object *C.GObject, user_data C.gpointer) {
+	glib.IdleAdd(func() bool {
+		if globalWin != nil {
+			if globalWin.IsActive() {
+				globalWin.Hide()
+			} else {
+				globalWin.Present()
+			}
+		}
+		return false
+	})
+}
+
+//export go_tray_popup_callback
+func go_tray_popup_callback(object *C.GObject, button C.guint, activate_time C.guint, user_data C.gpointer) {
+	glib.IdleAdd(func() bool {
+		if globalTrayMenu != nil {
+			globalTrayMenu.PopupAtPointer(nil)
+		}
+		return false
+	})
+}
+
 func (app *App) BuildUI() {
 	win, _ := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
 	win.SetTitle("AWGuird")
 	win.SetDefaultSize(880, 580)
-	win.Connect("destroy", func() { gtk.MainQuit() })
 	app.Window = win
+	globalWin = win // Store for the tray callback
 
-	// FIXED: Load the main window icon from embedded memory
+	// Load the main window icon from embedded memory
 	loader, err := gdk.PixbufLoaderNew()
+	var mainPixbuf *gdk.Pixbuf
 	if err == nil {
 		_, _ = loader.Write(AppIconBytes)
 		_ = loader.Close()
 		if pixbuf, err := loader.GetPixbuf(); err == nil {
 			win.SetIcon(pixbuf)
+			mainPixbuf = pixbuf
 		}
 	}
 
@@ -236,6 +289,36 @@ func (app *App) BuildUI() {
 		}
 	}
 
+	// SYSTEM TRAY VIA DIRECT CGO BRIDGE
+	if mainPixbuf != nil {
+		trayMenu, _ := gtk.MenuNew()
+		globalTrayMenu = trayMenu // Store for callback execution
+		
+		showItem, _ := gtk.MenuItemNewWithLabel("Show Window")
+		showItem.Connect("activate", func() {
+			win.Present()
+		})
+		
+		quitItem, _ := gtk.MenuItemNewWithLabel("Quit Application")
+		quitItem.Connect("activate", func() {
+			gtk.MainQuit()
+		})
+		
+		trayMenu.Append(showItem)
+		trayMenu.Append(quitItem)
+		trayMenu.ShowAll()
+
+		// Instantiates the native C widget directly and stores the Go object pointer link
+		cPixbuf := (*C.GdkPixbuf)(unsafe.Pointer(mainPixbuf.Native()))
+		_ = C.create_status_icon(cPixbuf, nil)
+	}
+
+	// Intercept close button [X] to hide/minimize instead of causing process destruction
+	win.Connect("delete-event", func() bool {
+		win.Hide()
+		return true 
+	})
+
 	win.ShowAll()
 }
 
@@ -260,7 +343,6 @@ func (app *App) SelectActiveTunnelInTreeView() {
 	}
 }
 
-// Deprecated in favor of embedded loading; kept safely to prevent breaking outside imports.
 func (app *App) getIconPath(tunnelName string) string {
 	if app.ActiveTunnel == tunnelName {
 		return filepath.Join(".", "shield_active.png")

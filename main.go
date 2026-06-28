@@ -33,7 +33,7 @@ type App struct {
 	AddressLabel    *gtk.Label
 	DnsLabel        *gtk.Label
 	ToggleBtn       *gtk.Button
-	EditConfigBtn   *gtk.Button // Connected for inline editing capability
+	EditConfigBtn   *gtk.Button
 
 	PeerPubKeyLabel *gtk.Label
 	AllowedIpsLabel *gtk.Label
@@ -42,6 +42,9 @@ type App struct {
 	TransferLabel   *gtk.Label
 
 	LogTextView     *gtk.TextView
+	
+	// FIXED: Using generic glib.Object to safely interface with the system's tray wrapper
+	StatusIcon      *glib.Object 
 	
 	CurrentTunnel   *Tunnel
 	ActiveTunnel    string
