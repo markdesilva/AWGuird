@@ -34,7 +34,7 @@ sudo go build -o awg-client .
 ```
 
 ### Installing
-+ Create /usr/share/applications/awg-client.desktop and add the following to it:
++ Create **/usr/share/applications/awg-client.desktop** and add the following to it:
 
 ```
 [Desktop Entry]
@@ -48,7 +48,7 @@ Categories=Network;Utility;
 StartupWMClass=awg-client
 ```
 
-+ Create /etc/xdg/autostart/awg-client.desktop and add the following to it:
++ Create **/etc/xdg/autostart/awg-client.desktop** and add the following to it:
 
 ```
 [Desktop Entry]
