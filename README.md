@@ -74,7 +74,8 @@ sudo systemctl restart gdm
 ### Packages
 + Debian package is available.
 + You can convert the Debian package to an Arch tarball using **debtab**
-   + ensure that your AmneziaWG config directory is **/etc/amnezia/amneziawg**
+   + edit both **/usr/share/applications/awg-client.desktop** and **/etc/xdg/autostart/awg-client.desktop** to change _/usr/local/bin_ to _/usr/bin_ since debtap will move the awg-client to /usr/bin
+   + make sure that your AmneziaWG config directory is **/etc/amnezia/amneziawg**
    + both showing up in the app tray and the auto start _should_ work if you're running GNOME or KDE Plasma
    + if you are running other windows managers (i3, Sway, Hyprland, etc) make sure the polkit agent (like polkit-gnome or lxsession) is running in the background
   
