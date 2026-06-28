@@ -48,6 +48,19 @@ Categories=Network;Utility;
 StartupWMClass=awg-client
 ```
 
++ Create /etc/xdg/autostart/awg-client.desktop and add the following to it:
+
+```
+[Desktop Entry]
+Type=Application
+Name=AWGuird AutoRun
+Comment=Start AWGuird VPN interface monitor on session login
+Exec=pkexec /usr/local/bin/awg-client
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+```
+
 + Copy the awg-client binary to /usr/local/bin
 + Copy app_icon.png file to /usr/share/pixmaps/awg-client.png
 + Restart gdm if the application doesn't show in the app drawer
