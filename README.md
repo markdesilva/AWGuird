@@ -7,6 +7,8 @@ A Linux GTK gui client for AmneziaWG heavily inspired by UnnoTed's Wireguird
 + Looks the same and does almost the same things as the official Wireguard's Windows gui client but for AmneziaWG
 + Lists tunnels from /etc/amnezia/amneziawg
 + Controls AmneziaWG through awg-quick
++ Runs on startup (will prompt for root password)
++ System tray icon to maximize/minimize window (doesn't affect tunnel)
 
 ### Prerequisites
 + AmneziaWG
@@ -22,16 +24,17 @@ sudo apt install libgtk-3-dev build-essential golang-go
 ```
 
 #### Build
-+ Clone the repository
-+ CD to the repository directory and do the following:
++ Do the following:
   
 ```
+sudo git clone https://github.com/markdesilva/AWGuird.git
+cd AWGuird
 sudo go mod tidy
 sudo go build -o awg-client .
 ```
 
 ### Installing
-+ Create usr/share/applications/awg-client.desktop and add the following to it:
++ Create /usr/share/applications/awg-client.desktop and add the following to it:
 
 ```
 [Desktop Entry]
@@ -49,5 +52,11 @@ StartupWMClass=awg-client
 + Copy app_icon.png file to /usr/share/pixmaps/awg-client.png
 + Restart gdm if the application doesn't show in the app drawer
   
+```
+sudo cp awg-client /usr/local/bin
+sudo cp app_icon.png /usr/share/pixmaps/awg-client.png
+sudo systemctl restart gdm
+```
+
 ### Packages
 Debian package is available.
