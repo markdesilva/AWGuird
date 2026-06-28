@@ -78,5 +78,11 @@ sudo systemctl restart gdm
    + make sure that your AmneziaWG config directory is **/etc/amnezia/amneziawg**
    + both showing up in the app tray and the auto start _should_ work if you're running GNOME or KDE Plasma
    + if you are running other windows managers (i3, Sway, Hyprland, etc) make sure the polkit agent (like polkit-gnome or lxsession) is running in the background
++ RPM package is available but note:
+   + you need to install **gnome-extensions-app** and **gnome-shell-extension-appindicator** since Gnome for Fedora does away with system tray icons
+   + after installing the above, you need to run **Extensions** and enable **AppIndicator and KStatusNotifierItem Support**
+   + log out and log back in
+   + install the RPM package with dnf, you should be able to see it in the app drawer
+   + autostart on boot does **_NOT_** work natively, you need to install **gnome-tweaks** and add AWGuird as a startup application on log in
   
 
