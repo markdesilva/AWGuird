@@ -5,10 +5,10 @@ A Linux GTK gui client for AmneziaWG heavily inspired by UnnoTed's Wireguird
 
 ### Features
 + Looks the same and does almost the same things as the official Wireguard's Windows gui client but for AmneziaWG
-+ Lists tunnels from /etc/amnezia/amneziawg
++ Lists tunnels from /etc/amnezia/amneziawg (and /etc/wireguard if present)
 + Controls AmneziaWG through awg-quick
-+ Runs on startup (will prompt for root password)
-+ System tray icon to maximize/minimize window (doesn't affect tunnel)
++ Runs on startup
++ System tray icon to maximize/minimize window (doesn't affect state of the tunnel)
 
 ### Prerequisites
 + AmneziaWG (Not covered here)
