@@ -1,5 +1,5 @@
 Package: awg-client
-Version: 1.0.0
+Version: 1.0.2
 Architecture: amd64
 Maintainer: Mark De Silva
 Depends: libc6, amneziawg-tools

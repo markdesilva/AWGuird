@@ -43,7 +43,6 @@ type App struct {
 
 	LogTextView     *gtk.TextView
 	
-	// FIXED: Using generic glib.Object to safely interface with the system's tray wrapper
 	StatusIcon      *glib.Object 
 	
 	CurrentTunnel   *Tunnel
@@ -57,6 +56,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 1. Check if the --minimized flag was passed
+	minimizedStartup := false
+	for _, arg := range os.Args {
+		if arg == "--minimized" {
+			minimizedStartup = true
+			break
+		}
+	}
+
+        if minimizedStartup {
+		time.Sleep(4 * time.Second)
+	}
+
 	gtk.Init(nil)
 
 	app := &App{
@@ -65,7 +77,14 @@ func main() {
 	app.BuildUI()
 	app.RefreshTunnels()
 
-	// Global loop driving background statistics synchronization
+	// 2. Adjust visibility based on the command line flag
+	if minimizedStartup {
+		app.Window.Hide()
+	} else {
+		app.Window.ShowAll()
+		app.Window.Present()
+	}
+
 	go func() {
 		for {
 			time.Sleep(2 * time.Second)

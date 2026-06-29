@@ -11,13 +11,18 @@ extern void go_tray_popup_callback(GObject *object, guint button, guint activate
 static inline GObject* create_status_icon(GdkPixbuf *pixbuf, gpointer user_data) {
     GtkStatusIcon *icon = gtk_status_icon_new_from_pixbuf(pixbuf);
     gtk_status_icon_set_title(icon, "AWGuird");
-    gtk_status_icon_set_tooltip_text(icon, "AWGuird VPN Client");
+    gtk_status_icon_set_tooltip_text(icon, "AWGuird VPN Status");
     gtk_status_icon_set_visible(icon, TRUE);
     
     g_signal_connect(G_OBJECT(icon), "activate", G_CALLBACK(go_tray_activate_callback), user_data);
     g_signal_connect(G_OBJECT(icon), "popup-menu", G_CALLBACK(go_tray_popup_callback), user_data);
     
     return G_OBJECT(icon);
+}
+
+// Positions the context menu aligned right under the panel status icon geometry bounds
+static inline void popup_status_menu(GObject *icon, GObject *menu, guint button, guint activate_time) {
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, GTK_STATUS_ICON(icon), button, activate_time);
 }
 */
 import "C"
@@ -31,7 +36,6 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-// Global reference pointers for the CGO callbacks to access
 var globalWin *gtk.Window
 var globalTrayMenu *gtk.Menu
 
@@ -39,9 +43,10 @@ var globalTrayMenu *gtk.Menu
 func go_tray_activate_callback(object *C.GObject, user_data C.gpointer) {
 	glib.IdleAdd(func() bool {
 		if globalWin != nil {
-			if globalWin.IsActive() {
+			if globalWin.GetVisible() {
 				globalWin.Hide()
 			} else {
+				globalWin.ShowAll()
 				globalWin.Present()
 			}
 		}
@@ -53,7 +58,8 @@ func go_tray_activate_callback(object *C.GObject, user_data C.gpointer) {
 func go_tray_popup_callback(object *C.GObject, button C.guint, activate_time C.guint, user_data C.gpointer) {
 	glib.IdleAdd(func() bool {
 		if globalTrayMenu != nil {
-			globalTrayMenu.PopupAtPointer(nil)
+			cMenu := (*C.GObject)(unsafe.Pointer(globalTrayMenu.Native()))
+			C.popup_status_menu(object, cMenu, button, activate_time)
 		}
 		return false
 	})
@@ -64,9 +70,8 @@ func (app *App) BuildUI() {
 	win.SetTitle("AWGuird")
 	win.SetDefaultSize(880, 580)
 	app.Window = win
-	globalWin = win // Store for the tray callback
+	globalWin = win
 
-	// Load the main window icon from embedded memory
 	loader, err := gdk.PixbufLoaderNew()
 	var mainPixbuf *gdk.Pixbuf
 	if err == nil {
@@ -289,13 +294,13 @@ func (app *App) BuildUI() {
 		}
 	}
 
-	// SYSTEM TRAY VIA DIRECT CGO BRIDGE
 	if mainPixbuf != nil {
 		trayMenu, _ := gtk.MenuNew()
-		globalTrayMenu = trayMenu // Store for callback execution
+		globalTrayMenu = trayMenu
 		
-		showItem, _ := gtk.MenuItemNewWithLabel("Show Window")
+		showItem, _ := gtk.MenuItemNewWithLabel("Open AWGuird")
 		showItem.Connect("activate", func() {
+			win.ShowAll()
 			win.Present()
 		})
 		
@@ -308,18 +313,16 @@ func (app *App) BuildUI() {
 		trayMenu.Append(quitItem)
 		trayMenu.ShowAll()
 
-		// Instantiates the native C widget directly and stores the Go object pointer link
 		cPixbuf := (*C.GdkPixbuf)(unsafe.Pointer(mainPixbuf.Native()))
 		_ = C.create_status_icon(cPixbuf, nil)
 	}
 
-	// Intercept close button [X] to hide/minimize instead of causing process destruction
 	win.Connect("delete-event", func() bool {
 		win.Hide()
 		return true 
 	})
 
-	win.ShowAll()
+	// REMOVED win.ShowAll() here! Visibility is now controlled by main.go
 }
 
 func (app *App) SelectActiveTunnelInTreeView() {
