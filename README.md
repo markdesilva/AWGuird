@@ -11,16 +11,30 @@ A Linux GTK gui client for AmneziaWG heavily inspired by UnnoTed's Wireguird
 + System tray icon to maximize/minimize window (doesn't affect tunnel)
 
 ### Prerequisites
-+ AmneziaWG
++ AmneziaWG (Not covered here)
++ Wireguard (Optional)
 
 ### Compiling
 #### Dependencies
-+ libgtk-3-dev 
-+ build-essential 
-+ golang-go
++ gtk3 
++ build-essential (Debian)
++ go
++ libayatana-appindicator3
++ polkit (if not already installed by default)
 
+**Debian**
 ```
-sudo apt install libgtk-3-dev build-essential golang-go
+sudo apt install libgtk-3-dev build-essential golang-go libayatana-appindicator3-dev
+```
+
+**RPM**
+```
+sudo dnf install libgtk-3-dev go libayatana-appindicator3-dev
+```
+
+**Arch**
+```
+sudo pacman -S base-devel go gtk3 pkgconf polkit libayatana-appindicator3
 ```
 
 #### Build
@@ -30,10 +44,11 @@ sudo apt install libgtk-3-dev build-essential golang-go
 sudo git clone https://github.com/markdesilva/AWGuird.git
 cd AWGuird
 sudo go mod tidy
+sudo go get github.com/getlantern/systray
 sudo go build -o awg-client .
 ```
 
-### Installing (for Debian)
+### Installing
 + Create **/usr/share/applications/awg-client.desktop** and add the following to it:
 
 ```
@@ -55,34 +70,64 @@ StartupWMClass=awg-client
 Type=Application
 Name=AWGuird AutoRun
 Comment=Start AWGuird VPN interface monitor on session login
-Exec=pkexec /usr/local/bin/awg-client
+Exec=pkexec /usr/local/bin/awg-client --minimized
 Terminal=false
 NoDisplay=true
 X-GNOME-Autostart-enabled=true
 ```
 
-+ Copy the awg-client binary to /usr/local/bin
++ Create **/usr/share/polkit-1/actions/com.awguird.client.policy** and add the following to it:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <action id="com.awguird.client.run">
+    <description>Run AWGuird Client as root</description>
+    <message>Authentication is required to manage secure VPN network configurations.</message>
+    <defaults>
+      <allow_any>yes</allow_any>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/local/bin/awg-client</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+  </action>
+</policyconfig>
+```
+
++ Copy the awg-client binary to /usr/local/bin for Debian or /usr/bin for Fedora
 + Copy app_icon.png file to /usr/share/pixmaps/awg-client.png
-+ Restart gdm if the application doesn't show in the app drawer
++ Set ownership and permissions
   
 ```
 sudo cp awg-client /usr/local/bin
 sudo cp app_icon.png /usr/share/pixmaps/awg-client.png
+chmod 644 /usr/share/polkit-1/actions/com.awguird.client.policy /etc/xdg/autostart/awg-client.desktop /usr/share/applications/awg-client.desktop
+chown root:root /usr/share/polkit-1/actions/com.awguird.client.policy /etc/xdg/autostart/awg-client.desktop /usr/share/applications/awg-client.desktop
+chmod 755 /usr/local/bin/awg-client (Debian) or chmod 755 /usr/bin/awg-client (RPM/Arch)
+```
+
++ Restart gdm if the application doesn't show in the app drawer
+  
+```
 sudo systemctl restart gdm
 ```
 
 ### Packages
 + Debian package is available.
+   + install the deb package with apt, you should be able to see it in the app drawer
+   + log out and back in, it should autostart and show up in system tray minimized
 + You can convert the Debian package to an Arch tarball using **debtab**
    + edit both **/usr/share/applications/awg-client.desktop** and **/etc/xdg/autostart/awg-client.desktop** to change _/usr/local/bin_ to _/usr/bin_ since debtap will move the awg-client to /usr/bin
    + make sure that your AmneziaWG config directory is **/etc/amnezia/amneziawg**
    + both showing up in the app tray and the auto start _should_ work if you're running GNOME or KDE Plasma
-   + if you are running other windows managers (i3, Sway, Hyprland, etc) make sure the polkit agent (like polkit-gnome or lxsession) is running in the background
+   + if you are running other windows managers (i3, Sway, Hyprland, etc) make sure the polkit is installed and running in the background
 + RPM package is available but note:
-   + you need to install **gnome-extensions-app** and **gnome-shell-extension-appindicator** since Gnome for Fedora does away with system tray icons
+   + you need to install **gnome-extensions-app** and **gnome-shell-extension-appindicator** since Gnome for Fedora does away with system tray icons by default now
    + after installing the above, you need to run **Extensions** and enable **AppIndicator and KStatusNotifierItem Support**
    + log out and log back in
    + install the RPM package with dnf, you should be able to see it in the app drawer
-   + autostart on boot does **_NOT_** work natively, you need to install **gnome-tweaks** and add AWGuird as a startup application on log in
+   + log out and back in, it should autostart and show up in system tray minimized
   
 
