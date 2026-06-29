@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=AWGuird
+Comment=Manage WireGuard and AmneziaWG Tunnels
+Exec=pkexec /usr/bin/awg-client
+Icon=awg-client
+Terminal=false
+Categories=Network;Utility;
+StartupWMClass=awg-client

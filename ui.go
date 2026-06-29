@@ -10,8 +10,8 @@ extern void go_tray_popup_callback(GObject *object, guint button, guint activate
 
 static inline GObject* create_status_icon(GdkPixbuf *pixbuf, gpointer user_data) {
     GtkStatusIcon *icon = gtk_status_icon_new_from_pixbuf(pixbuf);
-    gtk_status_icon_set_title(icon, "AWGuird");
-    gtk_status_icon_set_tooltip_text(icon, "AWGuird VPN Status");
+    gtk_status_icon_set_title(icon, "AWG Client");
+    gtk_status_icon_set_tooltip_text(icon, "AWG Client VPN Status");
     gtk_status_icon_set_visible(icon, TRUE);
     
     g_signal_connect(G_OBJECT(icon), "activate", G_CALLBACK(go_tray_activate_callback), user_data);
@@ -29,6 +29,7 @@ import "C"
 
 import (
 	"path/filepath"
+	"time"
 	"unsafe"
 
 	"github.com/gotk3/gotk3/gdk"
@@ -38,6 +39,7 @@ import (
 
 var globalWin *gtk.Window
 var globalTrayMenu *gtk.Menu
+var lastMenuHide time.Time // Tracks when the menu was hidden to handle debouncing across distributions
 
 //export go_tray_activate_callback
 func go_tray_activate_callback(object *C.GObject, user_data C.gpointer) {
@@ -58,6 +60,18 @@ func go_tray_activate_callback(object *C.GObject, user_data C.gpointer) {
 func go_tray_popup_callback(object *C.GObject, button C.guint, activate_time C.guint, user_data C.gpointer) {
 	glib.IdleAdd(func() bool {
 		if globalTrayMenu != nil {
+			// If GTK registers that the menu is currently drawn on screen, close it manually.
+			if globalTrayMenu.GetVisible() {
+				globalTrayMenu.Popdown()
+				return false
+			}
+
+			// Ubuntu/AppIndicator Fix: If the OS just closed the menu a fraction of a second ago,
+			// block the duplicate event forwarding loop from instantly rebuilding it.
+			if time.Since(lastMenuHide) < 250*time.Millisecond {
+				return false
+			}
+
 			cMenu := (*C.GObject)(unsafe.Pointer(globalTrayMenu.Native()))
 			C.popup_status_menu(object, cMenu, button, activate_time)
 		}
@@ -67,7 +81,7 @@ func go_tray_popup_callback(object *C.GObject, button C.guint, activate_time C.g
 
 func (app *App) BuildUI() {
 	win, _ := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-	win.SetTitle("AWGuird")
+	win.SetTitle("AWG Client")
 	win.SetDefaultSize(880, 580)
 	app.Window = win
 	globalWin = win
@@ -298,7 +312,12 @@ func (app *App) BuildUI() {
 		trayMenu, _ := gtk.MenuNew()
 		globalTrayMenu = trayMenu
 		
-		showItem, _ := gtk.MenuItemNewWithLabel("Open AWGuird")
+		// Map the hide handler to log the closed state timestamp
+		trayMenu.Connect("hide", func() {
+			lastMenuHide = time.Now()
+		})
+		
+		showItem, _ := gtk.MenuItemNewWithLabel("Open AWG Client")
 		showItem.Connect("activate", func() {
 			win.ShowAll()
 			win.Present()
@@ -321,8 +340,6 @@ func (app *App) BuildUI() {
 		win.Hide()
 		return true 
 	})
-
-	// REMOVED win.ShowAll() here! Visibility is now controlled by main.go
 }
 
 func (app *App) SelectActiveTunnelInTreeView() {

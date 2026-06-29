@@ -56,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 1. Check if the --minimized flag was passed
+	// Check if the --minimized flag was passed via autostart config
 	minimizedStartup := false
 	for _, arg := range os.Args {
 		if arg == "--minimized" {
@@ -65,7 +65,8 @@ func main() {
 		}
 	}
 
-        if minimizedStartup {
+	// Race condition protection: allows window rendering components on panels to initialize
+	if minimizedStartup {
 		time.Sleep(4 * time.Second)
 	}
 
@@ -77,7 +78,7 @@ func main() {
 	app.BuildUI()
 	app.RefreshTunnels()
 
-	// 2. Adjust visibility based on the command line flag
+	// Adjust application main window map visibility based on start flags
 	if minimizedStartup {
 		app.Window.Hide()
 	} else {
