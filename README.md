@@ -118,11 +118,13 @@ sudo systemctl restart gdm
 + Debian package is available.
    + install the deb package with apt, you should be able to see it in the app drawer
    + log out and back in, it should autostart and show up in system tray minimized
+     
 + You can convert the Debian package to an Arch tarball using **debtab**
    + edit both **/usr/share/applications/awg-client.desktop** and **/etc/xdg/autostart/awg-client.desktop** to change _/usr/local/bin_ to _/usr/bin_ since debtap will move the awg-client to /usr/bin
    + make sure that your AmneziaWG config directory is **/etc/amnezia/amneziawg**
    + both showing up in the app tray and the auto start _should_ work if you're running GNOME or KDE Plasma
    + if you are running other windows managers (i3, Sway, Hyprland, etc) make sure the polkit is installed and running in the background
+     
 + RPM package is available but note:
    + you need to install **gnome-extensions-app** and **gnome-shell-extension-appindicator** since Gnome for Fedora does away with system tray icons by default now
    + after installing the above, you need to run **Extensions** and enable **AppIndicator and KStatusNotifierItem Support**
