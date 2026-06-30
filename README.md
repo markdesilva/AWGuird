@@ -12,7 +12,7 @@ A Linux GTK gui client for AmneziaWG heavily inspired by UnnoTed's Wireguird
 
 ### Prerequisites
 + AmneziaWG (Not covered here - AmneziaWG must be FULLY working)
-+ Wireguard (Optional)  
++ FULLY working means, even before installing AWGuird, you must be able to connect to your VPN (using awg-quick) and have internet
 
 ### Compiling
 #### Dependencies
