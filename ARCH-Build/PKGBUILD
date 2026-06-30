@@ -1,0 +1,26 @@
+# Maintainer: Mark De Silva <your-email@example.com>
+pkgname=awg-client
+pkgver=1.0.2
+pkgrel=3
+pkgdesc="AmneziaWG Secure UI Client with Tray and Autostart support"
+arch=('x86_64')
+url="https://github.com/markdesilva/AWGuird"
+license=('MIT')
+
+depends=('gtk3' 'polkit' 'libayatana-appindicator' 'amneziawg-tools')
+source=()
+options=('!strip' '!zipman')
+
+package() {
+    # Install the core Go binary
+    install -Dm755 "$startdir/usr/bin/awg-client" "$pkgdir/usr/bin/awg-client"
+
+    # Install Desktop Launchers
+    install -Dm644 "$startdir/usr/share/applications/awg-client.desktop" "$pkgdir/usr/share/applications/awg-client.desktop"
+    install -Dm644 "$startdir/etc/xdg/autostart/awg-client.desktop" "$pkgdir/etc/xdg/autostart/awg-client.desktop"
+
+    # Install Assets & Polkit Profiles
+    install -Dm644 "$startdir/usr/share/pixmaps/awg-client.png" "$pkgdir/usr/share/pixmaps/awg-client.png"
+    install -Dm644 "$startdir/usr/share/polkit-1/actions/com.awguird.client.policy" "$pkgdir/usr/share/polkit-1/actions/com.awguird.client.policy"
+    install -Dm644 "$startdir/usr/share/polkit-1/rules.d/50-awg-client.rules" "$pkgdir/usr/share/polkit-1/rules.d/50-awg-client.rules"
+}

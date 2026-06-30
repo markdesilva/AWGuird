@@ -1,0 +1,5 @@
+polkit.addRule(function(action, subject) {
+    if (action.id == "com.awguird.client.run") {
+        return polkit.Result.YES;
+    }
+});
