@@ -104,16 +104,18 @@ polkit.addRule(function(action, subject) {
 });
 ```
 
-+ Copy the awg-client binary to /usr/local/bin for Debian or /usr/bin for Fedora
++ Copy the awg-client binary to /usr/local/bin for Debian or /usr/bin for Fedora and Arch since they don't allow use of /usr/local/
++ Change all references to /usr/local/bin/ for the files above to /usr/bin/
 + Copy app_icon.png file to /usr/share/pixmaps/awg-client.png
 + Set ownership and permissions
   
 ```
 sudo cp awg-client /usr/local/bin
 sudo cp app_icon.png /usr/share/pixmaps/awg-client.png
-chmod 644 /usr/share/polkit-1/actions/com.awguird.client.policy /etc/xdg/autostart/awg-client.desktop /usr/share/applications/awg-client.desktop
-chown root:root /usr/share/polkit-1/actions/com.awguird.client.policy /etc/xdg/autostart/awg-client.desktop /usr/share/applications/awg-client.desktop
-chmod 755 /usr/local/bin/awg-client (Debian) or chmod 755 /usr/bin/awg-client (RPM/Arch)
+sudo sed -i 's|/usr/local/bin/|/usr/bin/|g' /usr/share/polkit-1/actions/com.awguird.client.policy /etc/xdg/autostart/awg-client.desktop /usr/share/applications/awg-client.desktop
+sudo chmod 644 /usr/share/polkit-1/actions/com.awguird.client.policy /etc/xdg/autostart/awg-client.desktop /usr/share/applications/awg-client.desktop
+sudo chown root:root /usr/share/polkit-1/actions/com.awguird.client.policy /etc/xdg/autostart/awg-client.desktop /usr/share/applications/awg-client.desktop
+sudo chmod 755 /usr/local/bin/awg-client (Debian) or chmod 755 /usr/bin/awg-client (RPM/Arch)
 ```
 
 + Restart gdm if the application doesn't show in the app drawer
