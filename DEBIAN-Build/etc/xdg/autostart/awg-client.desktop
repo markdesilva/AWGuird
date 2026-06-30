@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AWGuird AutoRun
+Comment=Start AWGuird VPN interface monitor on session login
+Exec=pkexec /usr/local/bin/awg-client --minimized
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
