@@ -95,6 +95,15 @@ X-GNOME-Autostart-enabled=true
 </policyconfig>
 ```
 
++ Create **/usr/share/polkit-1/rules.d/50-awg-client.rules** and add the following to it (only for Arch) :
+```
+polkit.addRule(function(action, subject) {
+    if (action.id == "com.awguird.client.run") {
+        return polkit.Result.YES;
+    }
+});
+```
+
 + Copy the awg-client binary to /usr/local/bin for Debian or /usr/bin for Fedora
 + Copy app_icon.png file to /usr/share/pixmaps/awg-client.png
 + Set ownership and permissions
