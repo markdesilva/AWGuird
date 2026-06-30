@@ -11,15 +11,14 @@ A Linux GTK gui client for AmneziaWG heavily inspired by UnnoTed's Wireguird
 + System tray icon to maximize/minimize window (doesn't affect state of the tunnel)
 
 ### Prerequisites
-+ AmneziaWG (Not covered here)
-+ Wireguard (Optional)
++ AmneziaWG (Not covered here - AmneziaWG must be FULLY working)
++ Wireguard (Optional)  
 
 ### Compiling
 #### Dependencies
 + gtk3 
-+ build-essential (Debian)
 + go
-+ libayatana-appindicator3
++ libayatana-appindicator
 + polkit (if not already installed by default)
 
 **Debian**
@@ -34,7 +33,7 @@ sudo dnf install libgtk-3-dev go libayatana-appindicator3-dev
 
 **Arch**
 ```
-sudo pacman -S base-devel go gtk3 pkgconf polkit libayatana-appindicator3
+sudo pacman -S base-devel go gtk3 pkgconf polkit libayatana-appindicator
 ```
 
 #### Build
@@ -119,11 +118,7 @@ sudo systemctl restart gdm
    + install the deb package with apt, you should be able to see it in the app drawer
    + log out and back in, it should autostart and show up in system tray minimized
      
-+ Arch package
-   + you can convert the Debian package to an Arch tarball using **debtab**
-   + edit both **/usr/share/applications/awg-client.desktop** and **/etc/xdg/autostart/awg-client.desktop** to change _/usr/local/bin_ to _/usr/bin_ since debtap will move the awg-client to /usr/bin
-   + make sure that your AmneziaWG config directory is **/etc/amnezia/amneziawg**
-   + both showing up in the app tray and the auto start _should_ work if you're running GNOME or KDE Plasma
++ Arch package is available
    + if you are running other windows managers (i3, Sway, Hyprland, etc) make sure the polkit is installed and running in the background
      
 + RPM package is available but note:
